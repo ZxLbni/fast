@@ -57,6 +57,9 @@ async def download_video(url, reply_msg, user_mention, user_id):
         if download.is_complete:
             file_path = download.files[0].path
 
+            if not file_path or not os.path.exists(file_path):
+                raise Exception("Downloaded file is not a valid video")
+
             thumbnail_path = "thumbnail.jpg"
             thumbnail_response = requests.get(thumbnail_url)
             with open(thumbnail_path, "wb") as thumb_file:
@@ -75,8 +78,12 @@ async def download_video(url, reply_msg, user_mention, user_id):
 
 async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message):
     try:
-        if not file_path or not thumbnail_path or not video_title:
-            raise ValueError("Invalid file_path, thumbnail_path, or video_title")
+        if not file_path or not os.path.exists(file_path):
+            raise ValueError("Invalid or missing file_path")
+        if not thumbnail_path or not os.path.exists(thumbnail_path):
+            raise ValueError("Invalid or missing thumbnail_path")
+        if not video_title:
+            raise ValueError("Invalid video_title")
 
         file_size = os.path.getsize(file_path)
         uploaded = 0
