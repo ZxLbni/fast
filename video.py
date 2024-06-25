@@ -5,6 +5,7 @@ from status import format_progress_bar
 import asyncio
 import os, time
 import logging
+import mimetypes
 
 logging.basicConfig(level=logging.INFO)
 
@@ -56,6 +57,10 @@ async def download_video(url, reply_msg, user_mention, user_id):
 
         if download.is_complete:
             file_path = download.files[0].path
+            # Check the file type
+            mime_type, _ = mimetypes.guess_type(file_path)
+            if not mime_type or not mime_type.startswith("video"):
+                raise Exception("Downloaded file is not a valid video")
 
             thumbnail_path = "thumbnail.jpg"
             thumbnail_response = requests.get(thumbnail_url)
@@ -129,3 +134,4 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     except Exception as e:
         logging.error(f"Error uploading video: {e}")
         await reply_msg.edit_text(f"Error uploading video: {e}")
+
