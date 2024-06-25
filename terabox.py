@@ -6,38 +6,36 @@ from datetime import datetime
 from pyrogram.enums import ChatMemberStatus
 from dotenv import load_dotenv
 from os import environ
-import os
 import time
 from status import format_progress_bar
 from video import download_video, upload_video
-from web import keep_alive
 
 load_dotenv('config.env', override=True)
 
 logging.basicConfig(level=logging.INFO)
 
-api_id = os.environ.get('TELEGRAM_API', '27951862')
+api_id = environ.get('TELEGRAM_API', '28192191')
 if len(api_id) == 0:
     logging.error("TELEGRAM_API variable is missing! Exiting now")
     exit(1)
 
-api_hash = os.environ.get('TELEGRAM_HASH', 'efc22a9727c26a6f88f4f080bb284ac9')
+api_hash = environ.get('TELEGRAM_HASH', '663164abd732848a90e76e25cb9cf54a')
 if len(api_hash) == 0:
     logging.error("TELEGRAM_HASH variable is missing! Exiting now")
     exit(1)
     
-bot_token = os.environ.get('BOT_TOKEN', '7356416678:AAFNywi_Rsiw5WZ8e7re333Bsa0FgRcRoIQ')
+bot_token = environ.get('BOT_TOKEN', '7198441390:AAFKm0aYuNbv_kWLesYFmtlLpC-nP5ogrbY')
 if len(bot_token) == 0:
     logging.error("BOT_TOKEN variable is missing! Exiting now")
     exit(1)
-dump_id = os.environ.get('DUMP_CHAT_ID', '-1002203615198')
+dump_id = environ.get('DUMP_CHAT_ID', '-1002149484754')
 if len(dump_id) == 0:
     logging.error("DUMP_CHAT_ID variable is missing! Exiting now")
     exit(1)
 else:
     dump_id = int(dump_id)
 
-fsub_id = os.environ.get('FSUB_ID', '-1002153665131')
+fsub_id = environ.get('FSUB_ID', '-1002249393777')
 if len(fsub_id) == 0:
     logging.error("FSUB_ID variable is missing! Exiting now")
     exit(1)
@@ -53,8 +51,8 @@ async def start_command(client, message):
     await sticker_message.delete()
     user_mention = message.from_user.mention
     reply_message = f"ᴡᴇʟᴄᴏᴍᴇ, {user_mention}.\n\n🌟 ɪ ᴀᴍ ᴀ ᴛᴇʀᴀʙᴏx ᴅᴏᴡɴʟᴏᴀᴅᴇʀ ʙᴏᴛ. sᴇɴᴅ ᴍᴇ ᴀɴʏ ᴛᴇʀᴀʙᴏx ʟɪɴᴋ ɪ ᴡɪʟʟ ᴅᴏᴡɴʟᴏᴀᴅ ᴡɪᴛʜɪɴ ғᴇᴡ sᴇᴄᴏɴᴅs ᴀɴᴅ sᴇɴᴅ ɪᴛ ᴛᴏ ʏᴏᴜ ✨."
-    join_button = InlineKeyboardButton("ᴊᴏɪɴ ❤️🚀", url="https://t.me/Teraboxdownloaderr")
-    developer_button = InlineKeyboardButton("ᴅᴇᴠᴇʟᴏᴘᴇʀ ⚡️", url="https://t.me/Jarvis9009")
+    join_button = InlineKeyboardButton("ᴊᴏɪɴ ", url="https://t.me/teraboxx_downloader")
+    developer_button = InlineKeyboardButton("ᴅᴇᴠᴇʟᴏᴘᴇʀ⚡️", url="https://t.me/naresh3221")
     reply_markup = InlineKeyboardMarkup([[join_button, developer_button]])
     await message.reply_text(reply_message, reply_markup=reply_markup)
 
@@ -77,7 +75,7 @@ async def handle_message(client, message: Message):
     is_member = await is_user_member(client, user_id)
 
     if not is_member:
-        join_button = InlineKeyboardButton("ᴊᴏɪɴ ❤️🚀", url="https://t.me/Teraboxdownloaderr")
+        join_button = InlineKeyboardButton("ᴊᴏɪɴ ", url="https://t.me/teraboxx_downloader")
         reply_markup = InlineKeyboardMarkup([[join_button]])
         await message.reply_text("ʏᴏᴜ ᴍᴜsᴛ ᴊᴏɪɴ ᴍʏ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴜsᴇ ᴍᴇ.", reply_markup=reply_markup)
         return
@@ -94,8 +92,7 @@ async def handle_message(client, message: Message):
         await upload_video(client, file_path, thumbnail_path, video_title, reply_msg, dump_id, user_mention, user_id, message)
     except Exception as e:
         logging.error(f"Error handling message: {e}")
-        await reply_msg.edit_text("ғᴀɪʟᴇᴅ ᴛᴏ ᴘʀᴏᴄᴇss ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ.\nɪғ ʏᴏᴜʀ ғɪʟᴇ sɪᴢᴇ ɪs ᴍᴏʀᴇ ᴛʜᴀɴ 120ᴍʙ ɪᴛ ᴍɪɢʜᴛ ғᴀɪʟ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ.\nᴛʜɪs ɪs ᴛʜᴇ ᴛᴇʀᴀʙᴏx ɪssᴜᴇ, sᴏᴍᴇ ʟɪɴᴋs ᴀʀᴇ ʙʀᴏᴋᴇɴ, sᴏ ᴅᴏɴᴛ ᴄᴏɴᴛᴀᴄᴛ ʙᴏᴛ's ᴏᴡɴᴇʀ")
+        await reply_msg.edit_text("ғᴀɪʟᴇᴅ ᴛᴏ ᴘʀᴏᴄᴇss ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ.\nɪғ ʏᴏᴜʀ ғɪʟᴇ sɪᴢᴇ ɪs ᴍᴏʀᴇ ᴛʜᴀɴ 120ᴍʙ ɪᴛ ᴍɪɢʜᴛ ғᴀɪʟ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ.")
 
 if __name__ == "__main__":
-    keep_alive()
     app.run()
