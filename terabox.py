@@ -2,34 +2,41 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 import logging
 import asyncio
-from datetime import datetime
 from pyrogram.enums import ChatMemberStatus
 from dotenv import load_dotenv
 import os
-import time
-from status import format_progress_bar  # Ensure you have this module
-from video import download_video, upload_video  # Ensure you have these modules
-from web import keep_alive  # Ensure you have this module
+from status import format_progress_bar  # Ensure these modules are available
+from video import download_video, upload_video  # Ensure these modules are available
+from web import keep_alive  # Ensure this module is available
 
 # Load environment variables from a file named config.env
 load_dotenv('config.env', override=True)
 
 logging.basicConfig(level=logging.INFO)
 
-# Read environment variables
+# Read and validate environment variables
 try:
-    api_id = int(os.environ.get('TELEGRAM_API'))
-    api_hash = os.environ.get('TELEGRAM_HASH')
-    bot_token = os.environ.get('BOT_TOKEN')
-    dump_id = int(os.environ.get('DUMP_CHAT_ID'))
-    fsub_id = int(os.environ.get('FSUB_ID'))
+    api_id = int(os.environ.get('TELEGRAM_API', '0'))
+    if api_id == 0:
+        raise ValueError("TELEGRAM_API is not set or invalid")
+
+    api_hash = os.environ.get('TELEGRAM_HASH', '')
+    if not api_hash:
+        raise ValueError("TELEGRAM_HASH is not set or invalid")
+
+    bot_token = os.environ.get('BOT_TOKEN', '')
+    if not bot_token:
+        raise ValueError("BOT_TOKEN is not set or invalid")
+
+    dump_id = int(os.environ.get('DUMP_CHAT_ID', '0'))
+    if dump_id == 0:
+        raise ValueError("DUMP_CHAT_ID is not set or invalid")
+
+    fsub_id = int(os.environ.get('FSUB_ID', '0'))
+    if fsub_id == 0:
+        raise ValueError("FSUB_ID is not set or invalid")
 except ValueError as e:
     logging.error(f"Environment variable error: {e}")
-    exit(1)
-
-# Verify that all environment variables are set
-if not api_id or not api_hash or not bot_token or not dump_id or not fsub_id:
-    logging.error("One or more environment variables are missing or invalid! Exiting now")
     exit(1)
 
 # Initialize the bot
@@ -89,3 +96,4 @@ async def handle_message(client, message: Message):
 if __name__ == "__main__":
     keep_alive()
     app.run()
+
