@@ -5,7 +5,6 @@ import asyncio
 from datetime import datetime
 from pyrogram.enums import ChatMemberStatus
 from dotenv import load_dotenv
-from os import environ
 import os
 import time
 from status import format_progress_bar  # Ensure you have this module
@@ -18,36 +17,20 @@ load_dotenv('config.env', override=True)
 logging.basicConfig(level=logging.INFO)
 
 # Read environment variables
-api_id = os.environ.get('TELEGRAM_API')
-api_hash = os.environ.get('TELEGRAM_HASH')
-bot_token = os.environ.get('BOT_TOKEN')
-dump_id = os.environ.get('DUMP_CHAT_ID')
-fsub_id = os.environ.get('FSUB_ID')
+try:
+    api_id = int(os.environ.get('TELEGRAM_API'))
+    api_hash = os.environ.get('TELEGRAM_HASH')
+    bot_token = os.environ.get('BOT_TOKEN')
+    dump_id = int(os.environ.get('DUMP_CHAT_ID'))
+    fsub_id = int(os.environ.get('FSUB_ID'))
+except ValueError as e:
+    logging.error(f"Environment variable error: {e}")
+    exit(1)
 
 # Verify that all environment variables are set
-if not api_id:
-    logging.error("TELEGRAM_API variable is missing! Exiting now")
+if not api_id or not api_hash or not bot_token or not dump_id or not fsub_id:
+    logging.error("One or more environment variables are missing or invalid! Exiting now")
     exit(1)
-
-if not api_hash:
-    logging.error("TELEGRAM_HASH variable is missing! Exiting now")
-    exit(1)
-
-if not bot_token:
-    logging.error("BOT_TOKEN variable is missing! Exiting now")
-    exit(1)
-
-if not dump_id:
-    logging.error("DUMP_CHAT_ID variable is missing! Exiting now")
-    exit(1)
-else:
-    dump_id = int(dump_id)
-
-if not fsub_id:
-    logging.error("FSUB_ID variable is missing! Exiting now")
-    exit(1)
-else:
-    fsub_id = int(fsub_id)
 
 # Initialize the bot
 app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
@@ -106,4 +89,3 @@ async def handle_message(client, message: Message):
 if __name__ == "__main__":
     keep_alive()
     app.run()
-    
