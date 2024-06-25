@@ -8,45 +8,51 @@ from dotenv import load_dotenv
 from os import environ
 import os
 import time
-from status import format_progress_bar  # Make sure you have this module
-from video import download_video, upload_video  # Make sure you have these modules
-from web import keep_alive  # Make sure you have this module
+from status import format_progress_bar  # Ensure you have this module
+from video import download_video, upload_video  # Ensure you have these modules
+from web import keep_alive  # Ensure you have this module
 
+# Load environment variables from a file named config.env
 load_dotenv('config.env', override=True)
 
 logging.basicConfig(level=logging.INFO)
 
-api_id = os.environ.get('TELEGRAM_API', 'your_default_api_id')
+# Read environment variables
+api_id = os.environ.get('TELEGRAM_API')
+api_hash = os.environ.get('TELEGRAM_HASH')
+bot_token = os.environ.get('BOT_TOKEN')
+dump_id = os.environ.get('DUMP_CHAT_ID')
+fsub_id = os.environ.get('FSUB_ID')
+
+# Verify that all environment variables are set
 if not api_id:
     logging.error("TELEGRAM_API variable is missing! Exiting now")
     exit(1)
 
-api_hash = os.environ.get('TELEGRAM_HASH', 'your_default_api_hash')
 if not api_hash:
     logging.error("TELEGRAM_HASH variable is missing! Exiting now")
     exit(1)
 
-bot_token = os.environ.get('BOT_TOKEN', 'your_default_bot_token')
 if not bot_token:
     logging.error("BOT_TOKEN variable is missing! Exiting now")
     exit(1)
 
-dump_id = os.environ.get('DUMP_CHAT_ID', '-1002214286582')
 if not dump_id:
     logging.error("DUMP_CHAT_ID variable is missing! Exiting now")
     exit(1)
 else:
     dump_id = int(dump_id)
 
-fsub_id = os.environ.get('FSUB_ID', '-1002238659472')
 if not fsub_id:
     logging.error("FSUB_ID variable is missing! Exiting now")
     exit(1)
 else:
     fsub_id = int(fsub_id)
 
+# Initialize the bot
 app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
+# Define bot behavior
 @app.on_message(filters.command("start"))
 async def start_command(client, message):
     sticker_message = await message.reply_sticker("CAACAgIAAxkBAAEYonplzwrczhVu3I6HqPBzro3L2JU6YAACvAUAAj-VzAoTSKpoG9FPRjQE")
