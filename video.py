@@ -136,3 +136,5 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
         logging.error(f"Error uploading video: {e}")
         await reply_msg.edit_text(f"Error uploading video: {e}")
 
+# Assuming you have some code to start the asyncio event loop and handle the reply_msg, client, and other parameters
+
