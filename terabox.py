@@ -26,18 +26,18 @@ if len(api_hash) == 0:
     logging.error("TELEGRAM_HASH variable is missing! Exiting now")
     exit(1)
     
-bot_token = os.environ.get('BOT_TOKEN', '')
+bot_token = os.environ.get('BOT_TOKEN', '6515769066:AAFMhcVLpDMoBk0r6IQbK1xOvqU3Dv8FYq8')
 if len(bot_token) == 0:
     logging.error("BOT_TOKEN variable is missing! Exiting now")
     exit(1)
-dump_id = os.environ.get('DUMP_CHAT_ID', '')
+dump_id = os.environ.get('DUMP_CHAT_ID', '-1002214286582')
 if len(dump_id) == 0:
     logging.error("DUMP_CHAT_ID variable is missing! Exiting now")
     exit(1)
 else:
     dump_id = int(dump_id)
 
-fsub_id = os.environ.get('FSUB_ID', '')
+fsub_id = os.environ.get('FSUB_ID', '-1002238659472')
 if len(fsub_id) == 0:
     logging.error("FSUB_ID variable is missing! Exiting now")
     exit(1)
