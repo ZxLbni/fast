@@ -8,37 +8,38 @@ from dotenv import load_dotenv
 from os import environ
 import os
 import time
-from status import format_progress_bar
-from video import download_video, upload_video
-from web import keep_alive
+from status import format_progress_bar  # Make sure you have this module
+from video import download_video, upload_video  # Make sure you have these modules
+from web import keep_alive  # Make sure you have this module
 
 load_dotenv('config.env', override=True)
 
 logging.basicConfig(level=logging.INFO)
 
-api_id = os.environ.get('TELEGRAM_API', '24444928')
-if len(api_id) == 0:
+api_id = os.environ.get('TELEGRAM_API', 'your_default_api_id')
+if not api_id:
     logging.error("TELEGRAM_API variable is missing! Exiting now")
     exit(1)
 
-api_hash = os.environ.get('TELEGRAM_HASH', '0a278a515cd13ec8802b7dabed73dede')
-if len(api_hash) == 0:
+api_hash = os.environ.get('TELEGRAM_HASH', 'your_default_api_hash')
+if not api_hash:
     logging.error("TELEGRAM_HASH variable is missing! Exiting now")
     exit(1)
-    
-bot_token = os.environ.get('BOT_TOKEN', '6515769066:AAFMhcVLpDMoBk0r6IQbK1xOvqU3Dv8FYq8')
-if len(bot_token) == 0:
+
+bot_token = os.environ.get('BOT_TOKEN', 'your_default_bot_token')
+if not bot_token:
     logging.error("BOT_TOKEN variable is missing! Exiting now")
     exit(1)
+
 dump_id = os.environ.get('DUMP_CHAT_ID', '-1002214286582')
-if len(dump_id) == 0:
+if not dump_id:
     logging.error("DUMP_CHAT_ID variable is missing! Exiting now")
     exit(1)
 else:
     dump_id = int(dump_id)
 
 fsub_id = os.environ.get('FSUB_ID', '-1002238659472')
-if len(fsub_id) == 0:
+if not fsub_id:
     logging.error("FSUB_ID variable is missing! Exiting now")
     exit(1)
 else:
@@ -99,3 +100,4 @@ async def handle_message(client, message: Message):
 if __name__ == "__main__":
     keep_alive()
     app.run()
+    
