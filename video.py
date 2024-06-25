@@ -3,10 +3,8 @@ import aria2p
 from datetime import datetime
 from status import format_progress_bar
 import asyncio
-import os
-import time
+import os, time
 import logging
-import mimetypes
 
 logging.basicConfig(level=logging.INFO)
 
@@ -58,9 +56,8 @@ async def download_video(url, reply_msg, user_mention, user_id):
 
         if download.is_complete:
             file_path = download.files[0].path
-            # Check the file type
-            mime_type, _ = mimetypes.guess_type(file_path)
-            if not mime_type or not mime_type.startswith("video"):
+
+            if not file_path or not os.path.exists(file_path):
                 raise Exception("Downloaded file is not a valid video")
 
             thumbnail_path = "thumbnail.jpg"
@@ -73,6 +70,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
             return file_path, thumbnail_path, video_title
         else:
             raise Exception("Download failed")
+
     except Exception as e:
         logging.error(f"Error downloading video: {e}")
         await reply_msg.edit_text(f"Error downloading video: {e}")
@@ -80,6 +78,15 @@ async def download_video(url, reply_msg, user_mention, user_id):
 
 async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message):
     try:
+        if not file_path or not os.path.exists(file_path):
+            raise ValueError("Invalid or missing file_path")
+        if not thumbnail_path or not os.path.exists(thumbnail_path):
+            raise ValueError("Invalid or missing thumbnail_path")
+        if not video_title:
+            raise ValueError("Invalid video_title")
+
+        logging.info(f"Uploading video: {file_path}, Thumbnail: {thumbnail_path}")
+
         file_size = os.path.getsize(file_path)
         uploaded = 0
         start_time = datetime.now()
@@ -133,15 +140,10 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
         os.remove(file_path)
         os.remove(thumbnail_path)
         return collection_message.id
+
     except Exception as e:
         logging.error(f"Error uploading video: {e}")
         await reply_msg.edit_text(f"Error uploading video: {e}")
-        return None
 
-# Example usage
-async def process_video_download_and_upload(url, client, reply_msg, user_mention, user_id, collection_channel_id, message):
-    file_path, thumbnail_path, video_title = await download_video(url, reply_msg, user_mention, user_id)
-    if file_path and thumbnail_path and video_title:
-        await upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message)
-    else:
-        logging.error("Download failed, skipping upload.")
+# Assuming you have some code to start the asyncio event loop and handle the reply_msg, client, and other parameters
+
