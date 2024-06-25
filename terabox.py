@@ -16,12 +16,12 @@ load_dotenv('config.env', override=True)
 
 logging.basicConfig(level=logging.INFO)
 
-api_id = os.environ.get('TELEGRAM_API', '')
+api_id = os.environ.get('TELEGRAM_API', '24444928')
 if len(api_id) == 0:
     logging.error("TELEGRAM_API variable is missing! Exiting now")
     exit(1)
 
-api_hash = os.environ.get('TELEGRAM_HASH', '')
+api_hash = os.environ.get('TELEGRAM_HASH', '0a278a515cd13ec8802b7dabed73dede')
 if len(api_hash) == 0:
     logging.error("TELEGRAM_HASH variable is missing! Exiting now")
     exit(1)
