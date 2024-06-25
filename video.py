@@ -3,7 +3,8 @@ import aria2p
 from datetime import datetime
 from status import format_progress_bar
 import asyncio
-import os, time
+import os
+import time
 import logging
 import mimetypes
 
@@ -75,6 +76,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
     except Exception as e:
         logging.error(f"Error downloading video: {e}")
         await reply_msg.edit_text(f"Error downloading video: {e}")
+        return None, None, None
 
 async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message):
     try:
@@ -134,4 +136,13 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     except Exception as e:
         logging.error(f"Error uploading video: {e}")
         await reply_msg.edit_text(f"Error uploading video: {e}")
+        return None
+
+# Example usage
+async def process_video_download_and_upload(url, client, reply_msg, user_mention, user_id, collection_channel_id, message):
+    file_path, thumbnail_path, video_title = await download_video(url, reply_msg, user_mention, user_id)
+    if file_path and thumbnail_path and video_title:
+        await upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message)
+    else:
+        logging.error("Download failed, skipping upload.")
 
