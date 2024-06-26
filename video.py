@@ -2,6 +2,7 @@ import requests
 import aria2p
 from datetime import datetime
 from status import format_progress_bar
+from moviepy.editor import VideoFileClip
 import asyncio
 import os, time
 import logging
