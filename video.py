@@ -2,11 +2,10 @@ import requests
 import aria2p
 from datetime import datetime
 from status import format_progress_bar
-from moviepy.editor import VideoFileClip
 import asyncio
-import os
-import time
+import os, time
 import logging
+
 
 aria2 = aria2p.API(
     aria2p.Client(
@@ -15,7 +14,6 @@ aria2 = aria2p.API(
         secret=""
     )
 )
-
 async def download_video(url, reply_msg, user_mention, user_id):
     response = requests.get(f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}")
     response.raise_for_status()
@@ -99,19 +97,11 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             except Exception as e:
                 logging.warning(f"Error updating progress message: {e}")
 
-    # Extract the duration
-    clip = VideoFileClip(file_path)
-    duration = clip.duration
-    minutes, seconds = divmod(duration, 60)
-    duration_str = f"{int(minutes)}:{int(seconds):02d}"
-    clip.close()
-
-    # Send the video with the duration included in the caption
     with open(file_path, 'rb') as file:
         collection_message = await client.send_video(
             chat_id=collection_channel_id,
             video=file,
-            caption=f"✨ {video_title}\n⏱️ Duration: {duration_str}\n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}",
+            caption=f"✨ {video_title}\n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}",
             thumb=thumbnail_path,
             progress=progress
         )
@@ -120,14 +110,12 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             from_chat_id=collection_channel_id,
             message_id=collection_message.id
         )
-    
-    await asyncio.sleep(1)
-    await message.delete()
-    await message.reply_sticker("CAACAgIAAxkBAAEZdwRmJhCNfFRnXwR_lVKU1L9F3qzbtAAC4gUAAj-VzApzZV-v3phk4DQE")
+        await asyncio.sleep(1)
+        await message.delete()
+        await message.reply_sticker("CAACAgIAAxkBAAEZdwRmJhCNfFRnXwR_lVKU1L9F3qzbtAAC4gUAAj-VzApzZV-v3phk4DQE")
 
     await reply_msg.delete()
 
     os.remove(file_path)
     os.remove(thumbnail_path)
     return collection_message.id
-
