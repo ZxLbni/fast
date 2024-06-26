@@ -1,7 +1,7 @@
 import requests
 import aria2p
 from datetime import datetime
-from status import format_progress_bar  # Ensure this function can handle duration
+from status import format_progress_bar
 import asyncio
 import os
 import time
@@ -24,18 +24,16 @@ async def download_video(url, reply_msg, user_mention, user_id):
     fast_download_link = resolutions["Fast Download"]
     thumbnail_url = data["response"][0]["thumbnail"]
     video_title = data["response"][0]["title"]
-    duration = data["response"][0].get("duration", "Unknown")  # Extract duration
+    duration = data["response"][0].get("duration", "Unknown")
 
-    # Check file size if possible before downloading
     head_response = requests.head(fast_download_link)
     file_size = int(head_response.headers.get('Content-Length', 0))
-    if file_size > 120 * 1024 * 1024:  # 120 MB
+    if file_size > 120 * 1024 * 1024:
         await reply_msg.edit_text("ᴛʜᴇ ғɪʟᴇ sɪᴢᴇ ɪs ᴍᴏʀᴇ ᴛʜᴀɴ 120ᴍʙ. ᴅᴏᴡɴʟᴏᴀᴅ ғᴀɪʟᴇᴅ.")
         return
 
     download = aria2.add_uris([fast_download_link])
     start_time = datetime.now()
-
     last_progress_text = ""
 
     while not download.is_complete:
@@ -59,7 +57,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
             user_mention=user_mention,
             user_id=user_id,
             aria2p_gid=download.gid,
-            duration=duration  # Include duration
+            duration=duration
         )
 
         if progress_text != last_progress_text:
@@ -78,11 +76,11 @@ async def download_video(url, reply_msg, user_mention, user_id):
 
         await reply_msg.edit_text("ᴜᴘʟᴏᴀᴅɪɴɢ...")
 
-        return file_path, thumbnail_path, video_title
+        return file_path, thumbnail_path, video_title, duration
     else:
         raise Exception("Download failed")
 
-async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message):
+async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message, duration):
     file_size = os.path.getsize(file_path)
     uploaded = 0
     start_time = datetime.now()
@@ -107,7 +105,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             user_mention=user_mention,
             user_id=user_id,
             aria2p_gid="",
-            duration=duration  # Include duration
+            duration=duration
         )
 
         if progress_text != last_progress_text and time.time() - last_update_time > 2:
@@ -141,6 +139,18 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     os.remove(thumbnail_path)
     return collection_message.id
 
-ERROR:root:Error handling message: Telegram says: [400 MESSAGE_NOT_MODIFIED] - The message was not modified because you tried to edit it using the same content
-(caused by "messages.EditMessage")
-
+def format_progress_bar(filename, percentage, done, total_size, status, eta, speed, elapsed, user_mention, user_id, aria2p_gid, duration):
+    progress_bar = f"[{'=' * int(percentage // 5)}{' ' * (20 - int(percentage // 5))}] {percentage:.2f}%"
+    progress_text = (
+        f"**{filename}**\n"
+        f"{progress_bar}\n"
+        f"**{status}**\n"
+        f"Done: {done / (1024 ** 2):.2f} MB / {total_size / (1024 ** 2):.2f} MB\n"
+        f"Speed: {speed / 1024:.2f} KB/s\n"
+        f"ETA: {eta} seconds\n"
+        f"Elapsed: {elapsed:.2f} seconds\n"
+        f"Duration: {duration}\n"
+        f"User: {user_mention} (ID: {user_id})\n"
+    )
+    return progress_text
+    
