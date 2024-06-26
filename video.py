@@ -186,7 +186,7 @@ async def handle_message(m: Message):
         client = Client("my_bot_session")
 
         # Replace with your actual channel ID
-        collection_channel_id = "@your_channel_id"
+        collection_channel_id = "@sairam243"
 
         # Call upload_video function to upload the video
         await upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, username, user_id, m)
