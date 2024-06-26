@@ -130,4 +130,4 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     os.remove(file_path)
     os.remove(thumbnail_path)
     return collection_message.id
-    
+
