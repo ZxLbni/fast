@@ -45,7 +45,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
         eta = download.eta
         elapsed_time_seconds = (datetime.now() - start_time).total_seconds()
         
-        progress_text = format_progress_bar(
+        progress_text = await format_progress_bar(
             filename=video_title,
             percentage=percentage,
             done=done,
@@ -57,7 +57,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
             user_mention=user_mention,
             user_id=user_id,
             aria2p_gid=download.gid,
-            duration=duration
+            duration=await format_duration(duration)  # Format duration correctly
         )
 
         if progress_text != last_progress_text:
@@ -93,7 +93,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
         percentage = (current / total) * 100
         elapsed_time_seconds = (datetime.now() - start_time).total_seconds()
         
-        progress_text = format_progress_bar(
+        progress_text = await format_progress_bar(
             filename=video_title,
             percentage=percentage,
             done=current,
@@ -105,7 +105,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             user_mention=user_mention,
             user_id=user_id,
             aria2p_gid="",
-            duration=duration
+            duration=await format_duration(duration)  # Format duration correctly
         )
 
         if progress_text != last_progress_text and time.time() - last_update_time > 2:
@@ -120,7 +120,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
         collection_message = await client.send_video(
             chat_id=collection_channel_id,
             video=file,
-            caption=f"✨ {video_title}\n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}",
+            caption=f"✨ {video_title}\n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}\n⏱️ Duration: {await format_duration(duration)}",
             thumb=thumbnail_path,
             progress=progress
         )
@@ -147,7 +147,7 @@ async def format_progress_bar(filename, percentage, done, total_size, status, et
         f"**{status}**\n"
         f"Done: {done / (1024 ** 2):.2f} MB / {total_size / (1024 ** 2):.2f} MB\n"
         f"Speed: {speed / 1024:.2f} KB/s\n"
-        f"ETA: {eta} seconds\n"
+        f"ETA: {eta:.0f} seconds\n"
         f"Elapsed: {elapsed:.2f} seconds\n"
         f"Duration: {duration}\n"
         f"User: {user_mention} (ID: {user_id})\n"
@@ -161,3 +161,4 @@ async def format_duration(seconds):
         seconds = int(seconds % 60)
         return f"{hours:02}:{minutes:02}:{seconds:02}"
     return "Unknown"
+
