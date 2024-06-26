@@ -25,6 +25,13 @@ async def download_video(url, reply_msg, user_mention, user_id):
     thumbnail_url = data["response"][0]["thumbnail"]
     video_title = data["response"][0]["title"]
 
+    # Check file size if possible before downloading
+    head_response = requests.head(fast_download_link)
+    file_size = int(head_response.headers.get('Content-Length', 0))
+    if file_size > 120 * 1024 * 1024:  # 120 MB
+        await reply_msg.edit_text("ᴛʜᴇ ғɪʟᴇ sɪᴢᴇ ɪs ᴍᴏʀᴇ ᴛʜᴀɴ 120ᴍʙ. ᴅᴏᴡɴʟᴏᴀᴅ ғᴀɪʟᴇᴅ.")
+        return
+
     download = aria2.add_uris([fast_download_link])
     start_time = datetime.now()
 
@@ -130,4 +137,6 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     os.remove(file_path)
     os.remove(thumbnail_path)
     return collection_message.id
-        
+
+ERROR:root:Error handling message: Telegram says: [400 MESSAGE_NOT_MODIFIED] - The message was not modified because you tried to edit it using the same content
+(caused by "messages.EditMessage")
