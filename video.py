@@ -139,7 +139,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     os.remove(thumbnail_path)
     return collection_message.id
 
-def format_progress_bar(filename, percentage, done, total_size, status, eta, speed, elapsed, user_mention, user_id, aria2p_gid, duration):
+async def format_progress_bar(filename, percentage, done, total_size, status, eta, speed, elapsed, user_mention, user_id, aria2p_gid, duration):
     progress_bar = f"[{'=' * int(percentage // 5)}{' ' * (20 - int(percentage // 5))}] {percentage:.2f}%"
     progress_text = (
         f"**{filename}**\n"
@@ -153,4 +153,11 @@ def format_progress_bar(filename, percentage, done, total_size, status, eta, spe
         f"User: {user_mention} (ID: {user_id})\n"
     )
     return progress_text
-    
+
+async def format_duration(seconds):
+    if isinstance(seconds, (int, float)):
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        seconds = int(seconds % 60)
+        return f"{hours:02}:{minutes:02}:{seconds:02}"
+    return "Unknown"
