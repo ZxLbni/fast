@@ -55,7 +55,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
                 done=done,
                 total_size=total_size,
                 status="Downloading",
-                eta=format_duration(eta) if eta else "Unknown",
+                eta=format_duration(eta.total_seconds()) if eta else "Unknown",
                 speed=speed,
                 elapsed=format_duration(elapsed_time_seconds),
                 user_mention=user_mention,
@@ -174,4 +174,4 @@ def format_duration(seconds):
         seconds = int(seconds % 60)
         return f"{hours:02}:{minutes:02}:{seconds:02}"
     return "Unknown"
-
+                
