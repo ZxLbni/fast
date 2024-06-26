@@ -3,9 +3,9 @@ import aria2p
 from datetime import datetime
 from status import format_progress_bar
 import asyncio
-import os
-import time
+import os, time
 import logging
+
 
 aria2 = aria2p.API(
     aria2p.Client(
@@ -14,7 +14,6 @@ aria2 = aria2p.API(
         secret=""
     )
 )
-
 async def download_video(url, reply_msg, user_mention, user_id):
     response = requests.get(f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}")
     response.raise_for_status()
@@ -25,17 +24,8 @@ async def download_video(url, reply_msg, user_mention, user_id):
     thumbnail_url = data["response"][0]["thumbnail"]
     video_title = data["response"][0]["title"]
 
-    # Check file size if possible before downloading
-    head_response = requests.head(fast_download_link)
-    file_size = int(head_response.headers.get('Content-Length', 0))
-    if file_size > 120 * 1024 * 1024:  # 120 MB
-        await reply_msg.edit_text("á´›Êœá´‡ Ò“ÉªÊŸá´‡ sÉªá´¢á´‡ Éªs á´á´Ê€á´‡ á´›Êœá´€É´ 120á´Ê™. á´…á´á´¡É´ÊŸá´á´€á´… Ò“á´€ÉªÊŸá´‡á´….")
-        return
-
     download = aria2.add_uris([fast_download_link])
     start_time = datetime.now()
-
-    last_progress_text = ""
 
     while not download.is_complete:
         download.update()
@@ -45,7 +35,6 @@ async def download_video(url, reply_msg, user_mention, user_id):
         speed = download.download_speed
         eta = download.eta
         elapsed_time_seconds = (datetime.now() - start_time).total_seconds()
-        
         progress_text = format_progress_bar(
             filename=video_title,
             percentage=percentage,
@@ -59,11 +48,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
             user_id=user_id,
             aria2p_gid=download.gid
         )
-
-        if progress_text != last_progress_text:
-            await reply_msg.edit_text(progress_text)
-            last_progress_text = progress_text
-        
+        await reply_msg.edit_text(progress_text)
         await asyncio.sleep(2)
 
     if download.is_complete:
@@ -74,7 +59,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
         with open(thumbnail_path, "wb") as thumb_file:
             thumb_file.write(thumbnail_response.content)
 
-        await reply_msg.edit_text("á´œá´˜ÊŸá´á´€á´…ÉªÉ´É¢...")
+        await reply_msg.edit_text("ᴜᴘʟᴏᴀᴅɪɴɢ...")
 
         return file_path, thumbnail_path, video_title
     else:
@@ -85,32 +70,29 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     uploaded = 0
     start_time = datetime.now()
     last_update_time = time.time()
-    last_progress_text = ""
 
     async def progress(current, total):
-        nonlocal uploaded, last_update_time, last_progress_text
+        nonlocal uploaded, last_update_time
         uploaded = current
         percentage = (current / total) * 100
         elapsed_time_seconds = (datetime.now() - start_time).total_seconds()
         
-        progress_text = format_progress_bar(
-            filename=video_title,
-            percentage=percentage,
-            done=current,
-            total_size=total,
-            status="Uploading",
-            eta=(total - current) / (current / elapsed_time_seconds) if current > 0 else 0,
-            speed=current / elapsed_time_seconds if current > 0 else 0,
-            elapsed=elapsed_time_seconds,
-            user_mention=user_mention,
-            user_id=user_id,
-            aria2p_gid=""
-        )
-
-        if progress_text != last_progress_text and time.time() - last_update_time > 2:
+        if time.time() - last_update_time > 2:
+            progress_text = format_progress_bar(
+                filename=video_title,
+                percentage=percentage,
+                done=current,
+                total_size=total,
+                status="Uploading",
+                eta=(total - current) / (current / elapsed_time_seconds) if current > 0 else 0,
+                speed=current / elapsed_time_seconds if current > 0 else 0,
+                elapsed=elapsed_time_seconds,
+                user_mention=user_mention,
+                user_id=user_id,
+                aria2p_gid=""
+            )
             try:
                 await reply_msg.edit_text(progress_text)
-                last_progress_text = progress_text
                 last_update_time = time.time()
             except Exception as e:
                 logging.warning(f"Error updating progress message: {e}")
@@ -119,7 +101,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
         collection_message = await client.send_video(
             chat_id=collection_channel_id,
             video=file,
-            caption=f"âœ¨ {video_title}\nðŸ‘¤ ÊŸá´‡á´‡á´„Êœá´‡á´… Ê™Ê : {user_mention}\nðŸ“¥ á´œsá´‡Ê€ ÊŸÉªÉ´á´‹: tg://user?id={user_id}",
+            caption=f"✨ {video_title}\n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}",
             thumb=thumbnail_path,
             progress=progress
         )
@@ -138,5 +120,3 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     os.remove(thumbnail_path)
     return collection_message.id
 
-ERROR:root:Error handling message: Telegram says: [400 MESSAGE_NOT_MODIFIED] - The message was not modified because you tried to edit it using the same content
-(caused by "messages.EditMessage")
