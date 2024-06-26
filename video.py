@@ -1,7 +1,7 @@
 import requests
 import aria2p
 from datetime import datetime
-from status import format_progress_bar
+from status import format_progress_bar  # Ensure this function can handle duration
 import asyncio
 import os
 import time
@@ -24,6 +24,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
     fast_download_link = resolutions["Fast Download"]
     thumbnail_url = data["response"][0]["thumbnail"]
     video_title = data["response"][0]["title"]
+    duration = data["response"][0].get("duration", "Unknown")  # Extract duration
 
     # Check file size if possible before downloading
     head_response = requests.head(fast_download_link)
@@ -57,7 +58,8 @@ async def download_video(url, reply_msg, user_mention, user_id):
             elapsed=elapsed_time_seconds,
             user_mention=user_mention,
             user_id=user_id,
-            aria2p_gid=download.gid
+            aria2p_gid=download.gid,
+            duration=duration  # Include duration
         )
 
         if progress_text != last_progress_text:
@@ -104,7 +106,8 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             elapsed=elapsed_time_seconds,
             user_mention=user_mention,
             user_id=user_id,
-            aria2p_gid=""
+            aria2p_gid="",
+            duration=duration  # Include duration
         )
 
         if progress_text != last_progress_text and time.time() - last_update_time > 2:
@@ -140,3 +143,4 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
 
 ERROR:root:Error handling message: Telegram says: [400 MESSAGE_NOT_MODIFIED] - The message was not modified because you tried to edit it using the same content
 (caused by "messages.EditMessage")
+
