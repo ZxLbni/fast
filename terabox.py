@@ -11,6 +11,7 @@ import time
 from status import format_progress_bar
 from video import download_video, upload_video
 from web import keep_alive
+import re
 
 load_dotenv('config.env', override=True)
 
@@ -83,7 +84,22 @@ async def handle_message(client, message: Message):
         return
 
     terabox_link = message.text.strip()
-    if "terabox" not in terabox_link:
+    valid_domains = [
+        r"mirrobox\.com",
+        r"nephobox\.com",
+        r"freeterabox\.com",
+        r"1024tera\.com",
+        r"4funbox\.co",
+        r"4funbox\.com",
+        r"terabox\.app",
+        r"terabox\.com",
+        r"momerybox\.com",
+        r"teraboxapp\.com",
+        r"tibibox\.com",
+        r"terasharelink\.com",
+    ]
+
+    if not any(re.search(domain, terabox_link) for domain in valid_domains):
         await message.reply_text("ᴘʟᴇᴀsᴇ sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴛᴇʀᴀʙᴏx ʟɪɴᴋ.")
         return
 
