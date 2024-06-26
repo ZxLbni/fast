@@ -17,71 +17,82 @@ aria2 = aria2p.API(
 )
 
 async def download_video(url, reply_msg, user_mention, user_id):
-    response = requests.get(f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}")
-    response.raise_for_status()
-    data = response.json()
+    try:
+        response = requests.get(f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}")
+        response.raise_for_status()
+        data = response.json()
 
-    resolutions = data["response"][0]["resolutions"]
-    fast_download_link = resolutions["Fast Download"]
-    thumbnail_url = data["response"][0]["thumbnail"]
-    video_title = data["response"][0]["title"]
+        resolutions = data["response"][0]["resolutions"]
+        fast_download_link = resolutions["Fast Download"]
+        thumbnail_url = data["response"][0]["thumbnail"]
+        video_title = data["response"][0]["title"]
 
-    # Check file size if possible before downloading
-    head_response = requests.head(fast_download_link)
-    file_size = int(head_response.headers.get('Content-Length', 0))
-    if file_size > 120 * 1024 * 1024:  # 120 MB
-        await reply_msg.edit_text("File size is more than 120MB. Download failed.")
-        return
+        # Check file size if possible before downloading
+        head_response = requests.head(fast_download_link)
+        file_size = int(head_response.headers.get('Content-Length', 0))
+        if file_size > 120 * 1024 * 1024:  # 120 MB
+            await reply_msg.edit_text("File size is more than 120MB. Download failed.")
+            return None, None, None
 
-    download = aria2.add_uris([fast_download_link])
-    start_time = datetime.now()
+        download = aria2.add_uris([fast_download_link])
+        start_time = datetime.now()
 
-    last_progress_text = ""
+        last_progress_text = ""
 
-    while not download.is_complete:
-        download.update()
-        percentage = download.progress
-        done = download.completed_length
-        total_size = download.total_length
-        speed = download.download_speed
-        eta = download.eta
-        elapsed_time_seconds = (datetime.now() - start_time).total_seconds()
-        
-        progress_text = format_progress_bar(
-            filename=video_title,
-            percentage=percentage,
-            done=done,
-            total_size=total_size,
-            status="Downloading",
-            eta=eta,
-            speed=speed,
-            elapsed=elapsed_time_seconds,
-            user_mention=user_mention,
-            user_id=user_id,
-            aria2p_gid=download.gid
-        )
+        while not download.is_complete:
+            download.update()
+            percentage = download.progress
+            done = download.completed_length
+            total_size = download.total_length
+            speed = download.download_speed
+            eta = download.eta
+            elapsed_time_seconds = (datetime.now() - start_time).total_seconds()
+            
+            progress_text = format_progress_bar(
+                filename=video_title,
+                percentage=percentage,
+                done=done,
+                total_size=total_size,
+                status="Downloading",
+                eta=eta,
+                speed=speed,
+                elapsed=elapsed_time_seconds,
+                user_mention=user_mention,
+                user_id=user_id,
+                aria2p_gid=download.gid
+            )
 
-        if progress_text != last_progress_text:
-            await reply_msg.edit_text(progress_text)
-            last_progress_text = progress_text
-        
-        await asyncio.sleep(2)
+            if progress_text != last_progress_text:
+                await reply_msg.edit_text(progress_text)
+                last_progress_text = progress_text
+            
+            await asyncio.sleep(2)
 
-    if download.is_complete:
-        file_path = download.files[0].path
+        if download.is_complete:
+            file_path = download.files[0].path
 
-        thumbnail_path = "thumbnail.jpg"
-        thumbnail_response = requests.get(thumbnail_url)
-        with open(thumbnail_path, "wb") as thumb_file:
-            thumb_file.write(thumbnail_response.content)
+            thumbnail_path = "thumbnail.jpg"
+            thumbnail_response = requests.get(thumbnail_url)
+            with open(thumbnail_path, "wb") as thumb_file:
+                thumb_file.write(thumbnail_response.content)
 
-        await reply_msg.edit_text("Upload starting...")
+            await reply_msg.edit_text("Upload starting...")
 
-        return file_path, thumbnail_path, video_title
-    else:
-        raise Exception("Download failed")
+            return file_path, thumbnail_path, video_title
+        else:
+            raise Exception("Download failed")
+
+    except Exception as e:
+        logging.error(f"Error during download: {e}")
+        await reply_msg.edit_text("An error occurred during the download process.")
+        return None, None, None
 
 async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message):
+    if not file_path or not thumbnail_path or not video_title:
+        logging.error("Missing required video data.")
+        await reply_msg.edit_text("Failed to upload video due to missing data.")
+        return
+
     # Extract video duration
     video = mp.VideoFileClip(file_path)
     duration = video.duration
@@ -122,28 +133,36 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             except Exception as e:
                 logging.warning(f"Error updating progress message: {e}")
 
-    with open(file_path, 'rb') as file:
-        collection_message = await client.send_video(
-            chat_id=collection_channel_id,
-            video=file,
-            caption=f"✨ {video_title}\n⏳ Duration: {video_duration}\n👤 Requested by: {user_mention}\n📧 User Link: tg://user?id={user_id}",
-            thumb=thumbnail_path,
-            progress=progress
-        )
-        await client.copy_message(
-            chat_id=message.chat.id,
-            from_chat_id=collection_channel_id,
-            message_id=collection_message.id
-        )
-        await asyncio.sleep(1)
-        await message.delete()
-        await message.reply_sticker("CAACAgIAAxkBAAEZdwRmJhCNfFRnXwR_lVKU1L9F3qzbtAAC4gUAAj-VzApzZV-v3phk4DQE")
+    try:
+        with open(file_path, 'rb') as file:
+            collection_message = await client.send_video(
+                chat_id=collection_channel_id,
+                video=file,
+                caption=f"✨ {video_title}\n⏳ Duration: {video_duration}\n👤 Requested by: {user_mention}\n📧 User Link: tg://user?id={user_id}",
+                thumb=thumbnail_path,
+                progress=progress
+            )
+            await client.copy_message(
+                chat_id=message.chat.id,
+                from_chat_id=collection_channel_id,
+                message_id=collection_message.id
+            )
+            await asyncio.sleep(1)
+            await message.delete()
+            await message.reply_sticker("CAACAgIAAxkBAAEZdwRmJhCNfFRnXwR_lVKU1L9F3qzbtAAC4gUAAj-VzApzZV-v3phk4DQE")
 
-    await reply_msg.delete()
+        await reply_msg.delete()
 
-    os.remove(file_path)
-    os.remove(thumbnail_path)
-    return collection_message.id
+        os.remove(file_path)
+        os.remove(thumbnail_path)
+        return collection_message.id
 
-ERROR:root:Error handling message: Telegram says: [400 MESSAGE_NOT_MODIFIED] - The message was not modified because you tried to edit it using the same content (caused by "messages.EditMessage")
+    except Exception as e:
+        logging.error(f"Error during upload: {e}")
+        await reply_msg.edit_text("An error occurred during the upload process.")
+        return None
 
+# Example of how to call these functions
+# Make sure to use your own `client`, `reply_msg`, `message`, `collection_channel_id`, `user_mention`, and `user_id`
+# await download_video(url, reply_msg, user_mention, user_id)
+# await upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message)
