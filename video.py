@@ -1,6 +1,6 @@
 import requests
 import aria2p
-from datetime import datetime
+from datetime import datetime, timedelta
 import asyncio
 import os
 import time
@@ -49,15 +49,15 @@ async def download_video(url, reply_msg, user_mention, user_id):
             eta = download.eta
             elapsed_time_seconds = (datetime.now() - start_time).total_seconds()
             
-            progress_text = await format_progress_bar(
+            progress_text = format_progress_bar(
                 filename=video_title,
                 percentage=percentage,
                 done=done,
                 total_size=total_size,
                 status="Downloading",
-                eta=eta,
+                eta=format_duration(eta) if eta else "Unknown",
                 speed=speed,
-                elapsed=elapsed_time_seconds,
+                elapsed=format_duration(elapsed_time_seconds),
                 user_mention=user_mention,
                 user_id=user_id,
                 aria2p_gid=download.gid,
@@ -102,15 +102,15 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             percentage = (current / total) * 100
             elapsed_time_seconds = (datetime.now() - start_time).total_seconds()
             
-            progress_text = await format_progress_bar(
+            progress_text = format_progress_bar(
                 filename=video_title,
                 percentage=percentage,
                 done=current,
                 total_size=total,
                 status="Uploading",
-                eta=(total - current) / (current / elapsed_time_seconds) if current > 0 else 0,
+                eta=format_duration((total - current) / (current / elapsed_time_seconds)) if current > 0 else "Unknown",
                 speed=current / elapsed_time_seconds if current > 0 else 0,
-                elapsed=elapsed_time_seconds,
+                elapsed=format_duration(elapsed_time_seconds),
                 user_mention=user_mention,
                 user_id=user_id,
                 aria2p_gid="",
@@ -129,7 +129,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             collection_message = await client.send_video(
                 chat_id=collection_channel_id,
                 video=file,
-                caption=f"✨ {video_title}\n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}",
+                caption=f"✨ {video_title}\n📅 Duration: {duration}\n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}",
                 thumb=thumbnail_path,
                 progress=progress
             )
@@ -140,7 +140,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             )
             await asyncio.sleep(1)
             await message.delete()
-            await message.reply_sticker("CAACAgIAAxkBAAJg7GZ7sYaS4-EmISN1X58UZcQmdtsxAALTBQACP5XMCp9au9JdR8cxNQQ")
+            await message.reply_sticker("CAACAgIAAxkBAAEZdwRmJhCNfFRnXwR_lVKU1L9F3qzbtAAC4gUAAj-VzApzZV-v3phk4DQE")
 
         await reply_msg.delete()
 
@@ -160,14 +160,14 @@ async def format_progress_bar(filename, percentage, done, total_size, status, et
         f"**{status}**\n"
         f"Done: {done / (1024 ** 2):.2f} MB / {total_size / (1024 ** 2):.2f} MB\n"
         f"Speed: {speed / 1024:.2f} KB/s\n"
-        f"ETA: {eta:.2f} seconds\n"  # Fixed formatting for ETA
-        f"Elapsed: {elapsed:.2f} seconds\n"
+        f"ETA: {eta}\n"
+        f"Elapsed: {elapsed}\n"
         f"Duration: {duration}\n"
         f"User: {user_mention} (ID: {user_id})\n"
     )
     return progress_text
 
-async def format_duration(seconds):
+def format_duration(seconds):
     if isinstance(seconds, (int, float)):
         hours = int(seconds // 3600)
         minutes = int((seconds % 3600) // 60)
