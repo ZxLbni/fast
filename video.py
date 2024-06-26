@@ -13,12 +13,12 @@ aria2 = aria2p.API(
     aria2p.Client(
         host="http://localhost",
         port=6800,
-        secret=""  # Replace with your aria2 RPC secret if configured
+        secret="YOUR_SECRET_HERE"  # Replace with your aria2 RPC secret if configured
     )
 )
 
 # Function to download video using teraboxvideodownloader API
-async def download_video(url):
+async def download_video(url, user_mention, user_id, reply_msg):
     try:
         response = requests.get(f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}")
         response.raise_for_status()
@@ -44,6 +44,20 @@ async def download_video(url):
             # Printing or logging download progress
             logging.info(f"Downloading {video_title}: {percentage}% ({done}/{total_size}), Speed: {speed}, ETA: {eta}")
 
+            progress_text = format_progress_bar(
+                filename=video_title,
+                percentage=percentage,
+                done=done,
+                total_size=total_size,
+                status="Downloading",
+                eta=eta,
+                speed=speed,
+                elapsed=elapsed_time_seconds,
+                user_mention=user_mention,
+                user_id=user_id,
+                aria2p_gid=download.gid
+            )
+            await reply_msg.edit_text(progress_text)
             await asyncio.sleep(2)
 
         if download.is_complete:
@@ -57,7 +71,7 @@ async def download_video(url):
         raise
 
 # Function to upload video to Telegram
-async def upload_video(client, file_path, thumbnail_path, video_title, collection_channel_id, user_mention, user_id, message):
+async def upload_video(client, file_path, thumbnail_path, video_title, collection_channel_id, user_mention, user_id, reply_msg, message):
     try:
         file_size = os.path.getsize(file_path)
         start_time = datetime.now()
@@ -96,8 +110,10 @@ async def upload_video(client, file_path, thumbnail_path, video_title, collectio
 # Main function to orchestrate download and upload process
 async def main(client, url, collection_channel_id, user_mention, user_id, message):
     try:
+        reply_msg = await message.reply_text("Starting download...")
+
         # Downloading video
-        file_path, thumbnail_url, video_title = await download_video(url)
+        file_path, thumbnail_url, video_title = await download_video(url, user_mention, user_id, reply_msg)
         thumbnail_path = "thumbnail.jpg"
 
         # Downloading thumbnail
@@ -105,8 +121,10 @@ async def main(client, url, collection_channel_id, user_mention, user_id, messag
         with open(thumbnail_path, "wb") as thumb_file:
             thumb_file.write(thumbnail_response.content)
 
+        await reply_msg.edit_text("Uploading...")
+
         # Uploading video
-        await upload_video(client, file_path, thumbnail_path, video_title, collection_channel_id, user_mention, user_id, message)
+        await upload_video(client, file_path, thumbnail_path, video_title, collection_channel_id, user_mention, user_id, reply_msg, message)
 
     except Exception as e:
         logging.error(f"Error processing video: {e}")
