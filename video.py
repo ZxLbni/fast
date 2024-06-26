@@ -5,6 +5,7 @@ from status import format_progress_bar
 import asyncio
 import os, time
 import logging
+from moviepy.editor import VideoFileClip
 
 
 aria2 = aria2p.API(
@@ -14,6 +15,7 @@ aria2 = aria2p.API(
         secret=""
     )
 )
+
 async def download_video(url, reply_msg, user_mention, user_id):
     response = requests.get(f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}")
     response.raise_for_status()
@@ -97,11 +99,19 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             except Exception as e:
                 logging.warning(f"Error updating progress message: {e}")
 
+    # Get video duration
+    clip = VideoFileClip(file_path)
+    duration = clip.duration
+    clip.close()
+
+    # Construct the caption
+    caption = f"✨ {video_title}\n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ: {user_mention}\n⏳ ᴅᴜʀᴀᴛɪᴏɴ: {duration:.2f} s\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}"
+
     with open(file_path, 'rb') as file:
         collection_message = await client.send_video(
             chat_id=collection_channel_id,
             video=file,
-            caption=f"✨ {video_title}\n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}",
+            caption=caption,
             thumb=thumbnail_path,
             progress=progress
         )
@@ -119,4 +129,4 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     os.remove(file_path)
     os.remove(thumbnail_path)
     return collection_message.id
-
+        
