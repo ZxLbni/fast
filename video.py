@@ -29,7 +29,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
     head_response = requests.head(fast_download_link)
     file_size = int(head_response.headers.get('Content-Length', 0))
     if file_size > 120 * 1024 * 1024:  # 120 MB
-        await reply_msg.edit_text("á´›Êœá´‡ Ò“ÉªÊŸá´‡ sÉªá´¢á´‡ Éªs á´á´Ê€á´‡ á´›Êœá´€É´ 120á´Ê™. á´…á´á´¡É´ÊŸá´á´€á´… Ò“á´€ÉªÊŸá´‡á´….")
+        await reply_msg.edit_text("File size exceeds 120 MB. Aborting download.")
         return
 
     download = aria2.add_uris([fast_download_link])
@@ -60,6 +60,9 @@ async def download_video(url, reply_msg, user_mention, user_id):
             aria2p_gid=download.gid
         )
 
+        # Append timestamp to make each edit unique
+        progress_text += f" [{datetime.now().strftime('%H:%M:%S')}]"
+
         if progress_text != last_progress_text:
             await reply_msg.edit_text(progress_text)
             last_progress_text = progress_text
@@ -74,7 +77,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
         with open(thumbnail_path, "wb") as thumb_file:
             thumb_file.write(thumbnail_response.content)
 
-        await reply_msg.edit_text("á´œá´˜ÊŸá´á´€á´…ÉªÉ´É¢...")
+        await reply_msg.edit_text("Download complete.")
 
         return file_path, thumbnail_path, video_title
     else:
@@ -107,6 +110,9 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             aria2p_gid=""
         )
 
+        # Append timestamp to make each edit unique
+        progress_text += f" [{datetime.now().strftime('%H:%M:%S')}]"
+
         if progress_text != last_progress_text and time.time() - last_update_time > 2:
             try:
                 await reply_msg.edit_text(progress_text)
@@ -119,7 +125,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
         collection_message = await client.send_video(
             chat_id=collection_channel_id,
             video=file,
-            caption=f"âœ¨ {video_title}\nðŸ‘¤ ÊŸá´‡á´‡á´„Êœá´‡á´… Ê™Ê : {user_mention}\nðŸ“¥ á´œsá´‡Ê€ ÊŸÉªÉ´á´‹: tg://user?id={user_id}",
+            caption=f"🎞 File name: {video_title}\n⏰ Duration: \n👤 Task by: {user_mention}\n🔗 User's link: tg://user?id={user_id}",
             thumb=thumbnail_path,
             progress=progress
         )
@@ -137,6 +143,4 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     os.remove(file_path)
     os.remove(thumbnail_path)
     return collection_message.id
-
-ERROR:root:Error handling message: Telegram says: [400 MESSAGE_NOT_MODIFIED] - The message was not modified because you tried to edit it using the same content
-(caused by "messages.EditMessage")
+    
