@@ -10,7 +10,7 @@ from moviepy.editor import VideoFileClip
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Aria2 RPC configuration
+# Initialize aria2 API
 aria2 = aria2p.API(
     aria2p.Client(
         host="http://localhost",
@@ -21,18 +21,20 @@ aria2 = aria2p.API(
 
 async def download_video(url, reply_msg, user_mention, user_id):
     try:
-        response = requests.get(f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}")
+        # Example of downloading video from a URL
+        response = requests.get(f"https://example.com/download?url={url}")
         response.raise_for_status()
         data = response.json()
 
-        resolutions = data["response"][0]["resolutions"]
-        fast_download_link = resolutions["Fast Download"]
-        thumbnail_url = data["response"][0]["thumbnail"]
-        video_title = data["response"][0]["title"]
+        # Extract video details
+        video_url = data["video_url"]
+        video_title = data["title"]
 
-        download = aria2.add_uris([fast_download_link])
+        # Add video to aria2 for downloading
+        download = aria2.add_uris([video_url])
         start_time = datetime.now()
 
+        # Monitor download progress
         while not download.is_complete:
             download.update()
             percentage = download.progress
@@ -41,6 +43,8 @@ async def download_video(url, reply_msg, user_mention, user_id):
             speed = download.download_speed
             eta = download.eta
             elapsed_time_seconds = (datetime.now() - start_time).total_seconds()
+
+            # Format and update progress message
             progress_text = format_progress_bar(
                 filename=video_title,
                 percentage=percentage,
@@ -59,15 +63,8 @@ async def download_video(url, reply_msg, user_mention, user_id):
 
         if download.is_complete:
             file_path = download.files[0].path
-
-            thumbnail_path = "thumbnail.jpg"
-            thumbnail_response = requests.get(thumbnail_url)
-            with open(thumbnail_path, "wb") as thumb_file:
-                thumb_file.write(thumbnail_response.content)
-
-            await reply_msg.edit_text("Uploading...")
-
-            return file_path, thumbnail_path, video_title
+            # Optionally handle thumbnail and other metadata here
+            return file_path, video_title
         else:
             raise Exception("Download failed")
 
@@ -75,7 +72,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
         logging.error(f"Error in download_video: {e}")
         raise
 
-async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message):
+async def upload_video(client, file_path, video_title, reply_msg, collection_channel_id, user_mention, user_id):
     try:
         file_size = os.path.getsize(file_path)
         uploaded = 0
@@ -83,7 +80,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
         last_update_time = 0  # Initialize last update time
 
         try:
-            duration = 0
+            # Example of processing video duration using moviepy
             path = str(file_path)
             clip = VideoFileClip(path)
             duration = int(clip.duration)
@@ -92,6 +89,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             logging.warning(f"Failed to get video duration: {e}")
             duration = 0
         
+        # Format duration into HH:MM:SS
         hours, remainder = divmod(duration, 3600)
         minutes, seconds = divmod(remainder, 60)
         conv_duration = f"{hours:02}:{minutes:02}:{seconds:02}"
@@ -102,81 +100,68 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
             percentage = (current / total) * 100
             elapsed_time_seconds = (datetime.now() - start_time).total_seconds()
 
-            # Update progress every 2 seconds
-            if time.time() - last_update_time > 2:
-                progress_text = format_progress_bar(
-                    filename=video_title,
-                    percentage=percentage,
-                    done=current,
-                    total_size=total,
-                    status="Uploading",
-                    eta=(total - current) / (current / elapsed_time_seconds) if current > 0 else 0,
-                    speed=current / elapsed_time_seconds if current > 0 else 0,
-                    elapsed=elapsed_time_seconds,
-                    user_mention=user_mention,
-                    user_id=user_id,
-                    aria2p_gid=""
-                )
-                try:
-                    await reply_msg.edit_text(progress_text)
-                    last_update_time = time.time()
-                except Exception as e:
-                    logging.warning(f"Error updating progress message: {e}")
+            # Example of formatting and updating progress message
+            progress_text = format_progress_bar(
+                filename=video_title,
+                percentage=percentage,
+                done=current,
+                total_size=total,
+                status="Uploading",
+                eta=(total - current) / (current / elapsed_time_seconds) if current > 0 else 0,
+                speed=current / elapsed_time_seconds if current > 0 else 0,
+                elapsed=elapsed_time_seconds,
+                user_mention=user_mention,
+                user_id=user_id,
+                aria2p_gid=""
+            )
+            try:
+                await reply_msg.edit_text(progress_text)
+                last_update_time = time.time()
+            except Exception as e:
+                logging.warning(f"Error updating progress message: {e}")
 
-        # Upload the video file
+        # Example of uploading video to client (Telegram)
         with open(file_path, 'rb') as file:
             collection_message = await client.send_video(
                 chat_id=collection_channel_id,
                 video=file,
                 duration=duration,
-                caption=f"✨ {video_title} \nDuration : {conv_duration} \n👤 Leached by: {user_mention}\n📥 User link: tg://user?id={user_id}",
-                thumb=thumbnail_path,
+                caption=f"✨ {video_title} \nDuration: {conv_duration} \nUploaded by: {user_mention}\nUser link: tg://user?id={user_id}",
                 progress=progress
             )
-            # Copy the uploaded message to the original chat
+            # Optionally copy message to another chat or handle further actions
             await client.copy_message(
                 chat_id=message.chat.id,
                 from_chat_id=collection_channel_id,
                 message_id=collection_message.id
             )
-            await asyncio.sleep(1)  # Ensure the message is copied before deleting
+            await asyncio.sleep(1)
             await message.delete()
             await message.reply_sticker("CAACAgIAAxkBAAEZdwRmJhCNfFRnXwR_lVKU1L9F3qzbtAAC4gUAAj-VzApzZV-v3phk4DQE")
 
         await reply_msg.delete()
 
-        # Clean up: delete temporary files
+        # Optionally clean up temporary files after upload
         os.remove(file_path)
-        os.remove(thumbnail_path)
-
-        return collection_message.id
-
+        
     except Exception as e:
         logging.error(f"Error in upload_video: {e}")
         raise
 
-async def main():
-    try:
-        # Example usage: replace with your actual Telegram client setup
-        client = None  # Replace with your Telegram client instance
-        reply_msg = None  # Replace with your reply message instance
-        user_mention = ""  # Replace with user mention
-        user_id = ""  # Replace with user ID
-        collection_channel_id = ""  # Replace with collection channel ID
-        message = None  # Replace with message instance
-
-        # Example URL for video download
-        url = "https://example.com/video-url"
-
-        # Download video
-        file_path, thumbnail_path, video_title = await download_video(url, reply_msg, user_mention, user_id)
-
-        # Upload video
-        await upload_video(client, file_path, thumbnail_path, video_title, reply_msg, collection_channel_id, user_mention, user_id, message)
-
-    except Exception as e:
-        logging.error(f"Error in main function: {e}")
-
-# Run the main function
+# Example usage of the script
 if __name__ == "__main__":
-    asyncio.run(main())
+    # Example URL and user details
+    url = "https://example.com/video"
+    reply_msg = "Reply message object"
+    user_mention = "@username"
+    user_id = "user_id"
+    collection_channel_id = "collection_channel_id"
+
+    # Example of asyncio event loop for running async functions
+    loop = asyncio.get_event_loop()
+    try:
+        # Example of running download and upload functions asynchronously
+        file_path, video_title = loop.run_until_complete(download_video(url, reply_msg, user_mention, user_id))
+        loop.run_until_complete(upload_video(client, file_path, video_title, reply_msg, collection_channel_id, user_mention, user_id))
+    finally:
+        loop.close()
