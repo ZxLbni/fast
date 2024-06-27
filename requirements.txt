@@ -3,4 +3,6 @@ pyrogram
 python-dotenv
 aria2p
 requests
+Flask
+Werkzeug
 #for extracting duration
