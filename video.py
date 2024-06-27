@@ -73,6 +73,7 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     last_update_time = time.time()
 
     try:
+        duration = 0
         path = str(file_path)
         clip = VideoFileClip(path)
         duration = int(clip.duration)
