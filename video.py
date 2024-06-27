@@ -5,6 +5,7 @@ from status import format_progress_bar
 import asyncio
 import os, time
 import logging
+from moviepy.editor import VideoFileClip
 
 
 aria2 = aria2p.API(
@@ -71,6 +72,21 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     start_time = datetime.now()
     last_update_time = time.time()
 
+    try:
+        path = str(file_path)
+        clip = VideoFileClip(path)
+        duration = int(clip.duration)
+        clip.close()
+    except Exception as e:
+        logging.warning(f"can't add duration: {e}")
+        duration = 0
+        
+    hours, remainder = divmod(duration, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    conv_duration = f"{hours:02}:{minutes:02}:{seconds:02}"
+
+    
+
     async def progress(current, total):
         nonlocal uploaded, last_update_time
         uploaded = current
@@ -101,7 +117,8 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
         collection_message = await client.send_video(
             chat_id=collection_channel_id,
             video=file,
-            caption=f"✨ {video_title}\n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}",
+            duration=duration,         #duration added here
+            caption=f"✨ {video_title} \nDuration : {conv_duration} \n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}",
             thumb=thumbnail_path,
             progress=progress
         )
