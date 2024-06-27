@@ -15,6 +15,7 @@ aria2 = aria2p.API(
         secret=""
     )
 )
+
 async def download_video(url, reply_msg, user_mention, user_id):
     response = requests.get(f"https://teraboxvideodownloader.nepcoderdevs.workers.dev/?url={url}")
     response.raise_for_status()
@@ -60,7 +61,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
         with open(thumbnail_path, "wb") as thumb_file:
             thumb_file.write(thumbnail_response.content)
 
-        await reply_msg.edit_text("ᴜᴘʟᴏᴀᴅɪɴɢ...")
+        await reply_msg.edit_text("Uploading...")
 
         return file_path, thumbnail_path, video_title
     else:
@@ -85,8 +86,6 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
     hours, remainder = divmod(duration, 3600)
     minutes, seconds = divmod(remainder, 60)
     conv_duration = f"{hours:02}:{minutes:02}:{seconds:02}"
-
-    
 
     async def progress(current, total):
         nonlocal uploaded, last_update_time
@@ -118,8 +117,8 @@ async def upload_video(client, file_path, thumbnail_path, video_title, reply_msg
         collection_message = await client.send_video(
             chat_id=collection_channel_id,
             video=file,
-            duration=duration,         #duration added here
-            caption=f"✨ {video_title} \nDuration : {conv_duration} \n👤 ʟᴇᴇᴄʜᴇᴅ ʙʏ : {user_mention}\n📥 ᴜsᴇʀ ʟɪɴᴋ: tg://user?id={user_id}",
+            duration=duration,
+            caption=f"✨ {video_title} \nDuration : {conv_duration} \n👤 Leached by: {user_mention}\n📥 User link: tg://user?id={user_id}",
             thumb=thumbnail_path,
             progress=progress
         )
