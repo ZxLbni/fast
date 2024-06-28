@@ -9,6 +9,7 @@ from os import environ
 import time
 from status import format_progress_bar
 from video import download_video, upload_video
+
 load_dotenv('config.env', override=True)
 
 logging.basicConfig(level=logging.INFO)
@@ -80,15 +81,8 @@ async def handle_message(client, message: Message):
         return
 
     terabox_link = message.text.strip()
-    if "terabox" not in terabox_link:
-        await message.reply_text("ᴘʟᴇᴀsᴇ sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴛᴇʀᴀʙᴏx ʟɪɴᴋ.")
-        return
-
-    reply_msg = await message.reply_text("sᴇɴᴅɪɴɢ ʏᴏᴜ ᴛʜᴇ ᴍᴇᴅɪᴀ...😉")
-
-terabox_link = message.text.strip()
-    if "terasharelink" not in terabox_link:
-        await message.reply_text("ᴘʟᴇᴀsᴇ sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴛᴇʀᴀʙᴏx ʟɪɴᴋ.")
+    if "terabox" not in terabox_link and "terasharelink" not in terabox_link:
+        await message.reply_text("ᴘʟᴇᴀsᴇ sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴛᴇʀᴀʙᴏx ᴏʀ ᴛᴇʀᴀsʜᴀʀᴇʟɪɴᴋ ʟɪɴᴋ.")
         return
 
     reply_msg = await message.reply_text("sᴇɴᴅɪɴɢ ʏᴏᴜ ᴛʜᴇ ᴍᴇᴅɪᴀ...😉")
@@ -102,3 +96,4 @@ terabox_link = message.text.strip()
 
 if __name__ == "__main__":
     app.run()
+
