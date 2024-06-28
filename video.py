@@ -5,6 +5,7 @@ from status import format_progress_bar
 import asyncio
 import os, time
 import logging
+import moviepy
 from moviepy.editor import VideoFileClip
 
 
