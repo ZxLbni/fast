@@ -42,7 +42,7 @@ if len(fsub_id) == 0:
 else:
     fsub_id = int(fsub_id)
 
-admin_id = environ.get('ADMIN_ID', '7079923017')
+admin_id = environ.get('ADMIN_ID', 'YOUR_TELEGRAM_USER_ID')
 if len(admin_id) == 0:
     logging.error("ADMIN_ID variable is missing! Exiting now")
     exit(1)
@@ -130,7 +130,9 @@ async def handle_message(client, message: Message):
         await upload_video(client, file_path, thumbnail_path, video_title, reply_msg, dump_id, user_mention, user_id, message)
     except Exception as e:
         logging.error(f"Error handling message: {e}")
-        await reply_msg.edit_text("ғᴀɪʟᴇᴅ ᴛᴏ ᴘʀᴏᴄᴇss ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ.\nɪғ ʏᴏᴜʀ ғɪʟᴇ sɪᴢᴇ ɪs ᴍᴏʀᴇ ᴛʜᴀɴ 120ᴍʙ ɪᴛ ᴍɪɢʜᴛ ғᴀɪʟ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ.")
+        unique_identifier = f"\nError ID: {int(time.time())}"  # Add unique identifier to the error message
+        await reply_msg.edit_text("ғᴀɪʟᴇᴅ ᴛᴏ ᴘʀᴏᴄᴇss ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ.\nɪғ ʏᴏᴜʀ ғɪʟᴇ sɪᴢᴇ ɪs ᴍᴏʀᴇ ᴛʜᴀɴ 120ᴍʙ ɪᴛ ᴍɪɢʜᴛ ғᴀɪʟ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ." + unique_identifier)
 
 if __name__ == "__main__":
     app.run()
+    
