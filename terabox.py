@@ -7,7 +7,7 @@ from pyrogram.enums import ChatMemberStatus
 from dotenv import load_dotenv
 from os import environ
 import time
-from status import format_progress_bar
+from status import format_progress_bar  # Ensure you have these modules
 from video import download_video, upload_video
 
 load_dotenv('config.env', override=True)
@@ -23,7 +23,7 @@ api_hash = environ.get('TELEGRAM_HASH', '663164abd732848a90e76e25cb9cf54a')
 if len(api_hash) == 0:
     logging.error("TELEGRAM_HASH variable is missing! Exiting now")
     exit(1)
-    
+
 bot_token = environ.get('BOT_TOKEN', '7198441390:AAFKm0aYuNbv_kWLesYFmtlLpC-nP5ogrbY')
 if len(bot_token) == 0:
     logging.error("BOT_TOKEN variable is missing! Exiting now")
@@ -42,6 +42,13 @@ if len(fsub_id) == 0:
 else:
     fsub_id = int(fsub_id)
 
+admin_id = environ.get('ADMIN_ID', 'YOUR_TELEGRAM_USER_ID')
+if len(admin_id) == 0:
+    logging.error("ADMIN_ID variable is missing! Exiting now")
+    exit(1)
+else:
+    admin_id = int(admin_id)
+
 app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
 @app.on_message(filters.command("start"))
@@ -55,6 +62,37 @@ async def start_command(client, message):
     developer_button = InlineKeyboardButton("ᴅᴇᴠᴇʟᴏᴘᴇʀ⚡️", url="https://t.me/Semma_Bots")
     reply_markup = InlineKeyboardMarkup([[join_button, developer_button]])
     await message.reply_text(reply_message, reply_markup=reply_markup)
+
+@app.on_message(filters.command("members_count") & filters.user(admin_id))
+async def members_count(client, message):
+    chat = await client.get_chat(fsub_id)
+    await message.reply_text(f"The total number of members in the channel is: {chat.members_count}")
+
+@app.on_message(filters.command("broadcast") & filters.user(admin_id))
+async def broadcast_message(client, message):
+    if not message.reply_to_message:
+        await message.reply_text("Reply to a message to broadcast it.")
+        return
+
+    members = await client.get_chat_members(fsub_id)
+    broadcast_msg = message.reply_to_message
+
+    for member in members:
+        try:
+            await broadcast_msg.copy(chat_id=member.user.id)
+            await asyncio.sleep(0.1)
+        except Exception as e:
+            logging.error(f"Failed to send message to {member.user.id}: {e}")
+
+    await message.reply_text("Broadcast completed.")
+
+@app.on_message(filters.command("bot_status"))
+async def bot_status(client, message):
+    start_time = time.time()
+    await message.reply_text("Checking bot status...")
+    end_time = time.time()
+    uptime = end_time - start_time
+    await message.reply_text(f"Bot is running. Uptime: {uptime:.2f} seconds")
 
 async def is_user_member(client, user_id):
     try:
@@ -96,4 +134,3 @@ async def handle_message(client, message: Message):
 
 if __name__ == "__main__":
     app.run()
-
