@@ -86,6 +86,13 @@ async def handle_message(client, message: Message):
 
     reply_msg = await message.reply_text("sᴇɴᴅɪɴɢ ʏᴏᴜ ᴛʜᴇ ᴍᴇᴅɪᴀ...😉")
 
+terabox_link = message.text.strip()
+    if "terasharelink" not in terabox_link:
+        await message.reply_text("ᴘʟᴇᴀsᴇ sᴇɴᴅ ᴀ ᴠᴀʟɪᴅ ᴛᴇʀᴀʙᴏx ʟɪɴᴋ.")
+        return
+
+    reply_msg = await message.reply_text("sᴇɴᴅɪɴɢ ʏᴏᴜ ᴛʜᴇ ᴍᴇᴅɪᴀ...😉")
+
     try:
         file_path, thumbnail_path, video_title = await download_video(terabox_link, reply_msg, user_mention, user_id)
         await upload_video(client, file_path, thumbnail_path, video_title, reply_msg, dump_id, user_mention, user_id, message)
