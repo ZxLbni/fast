@@ -136,4 +136,3 @@ async def handle_message(client, message: Message):
 
 if __name__ == "__main__":
     app.run()
-
