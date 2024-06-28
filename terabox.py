@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from os import environ
 import time
 from status import format_progress_bar
-from video import download_video, upload_video
+from moviepy.editor import download_video, upload_video
 
 load_dotenv('config.env', override=True)
 
