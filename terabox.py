@@ -7,7 +7,7 @@ from pyrogram.enums import ChatMemberStatus
 from dotenv import load_dotenv
 from os import environ
 import time
-from status import format_progress_bar  # Ensure you have these modules
+from status import format_progress_bar
 from video import download_video, upload_video
 
 load_dotenv('config.env', override=True)
@@ -56,7 +56,7 @@ async def start_command(client, message):
     sticker_message = await message.reply_sticker("CAACAgIAAxkBAAJiHmZ-YWyuVu4snSoya1tYKXQJVd-BAAJBAAMh8AQcKgSvkt56N8E1BA")
     await asyncio.sleep(2)
     await sticker_message.delete()
-    user_mention = message.from_user.mention
+    user_mention = message.from_user.mention if message.from_user else "User"
     reply_message = f"ᴡᴇʟᴄᴏᴍᴇ, {user_mention}.\n\n🌟 ɪ ᴀᴍ ᴀ ᴛᴇʀᴀʙᴏx ᴅᴏᴡɴʟᴏᴀᴅᴇʀ ʙᴏᴛ. sᴇɴᴅ ᴍᴇ ᴀɴʏ ᴛᴇʀᴀʙᴏx ʟɪɴᴋ ɪ ᴡɪʟʟ ᴅᴏᴡɴʟᴏᴀᴅ ᴡɪᴛʜɪɴ ғᴇᴡ sᴇᴄᴏɴᴅs ᴀɴᴅ sᴇɴᴅ ɪᴛ ᴛᴏ ʏᴏᴜ ✨."
     join_button = InlineKeyboardButton("ᴊᴏɪɴ ", url="https://t.me/Semma_Bots")
     developer_button = InlineKeyboardButton("ᴅᴇᴠᴇʟᴏᴘᴇʀ⚡️", url="https://t.me/Semma_Bots")
@@ -74,12 +74,9 @@ async def broadcast_message(client, message):
         await message.reply_text("Reply to a message to broadcast it.")
         return
 
-    members = await client.get_chat_members(fsub_id)
-    broadcast_msg = message.reply_to_message
-
-    for member in members:
+    async for member in client.get_chat_members(fsub_id):
         try:
-            await broadcast_msg.copy(chat_id=member.user.id)
+            await message.reply_to_message.copy(chat_id=member.user.id)
             await asyncio.sleep(0.1)
         except Exception as e:
             logging.error(f"Failed to send message to {member.user.id}: {e}")
@@ -108,6 +105,10 @@ async def is_user_member(client, user_id):
 
 @app.on_message(filters.text)
 async def handle_message(client, message: Message):
+    if not message.from_user:
+        await message.reply_text("Message does not have a valid user.")
+        return
+
     user_id = message.from_user.id
     user_mention = message.from_user.mention
     is_member = await is_user_member(client, user_id)
@@ -135,4 +136,4 @@ async def handle_message(client, message: Message):
 
 if __name__ == "__main__":
     app.run()
-    
+
