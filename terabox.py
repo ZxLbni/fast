@@ -42,7 +42,7 @@ if len(fsub_id) == 0:
 else:
     fsub_id = int(fsub_id)
 
-admin_id = environ.get('ADMIN_ID', 'YOUR_TELEGRAM_USER_ID')
+admin_id = environ.get('ADMIN_ID', '7079923017')
 if len(admin_id) == 0:
     logging.error("ADMIN_ID variable is missing! Exiting now")
     exit(1)
