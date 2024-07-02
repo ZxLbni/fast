@@ -22,7 +22,7 @@ async def download_video(url, reply_msg, user_mention, user_id):
     data = response.json()
 
     resolutions = data["response"][0]["resolutions"]
-    fast_download_link = f"https://terabox.mohanishx1.workers.dev/?url={url}"
+    fast_download_link = resolutions["Fast Download"]
     thumbnail_url = data["response"][0]["thumbnail"]
     video_title = data["response"][0]["title"]
 
