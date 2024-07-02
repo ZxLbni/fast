@@ -7,8 +7,8 @@ from pyrogram.enums import ChatMemberStatus
 from dotenv import load_dotenv
 from os import environ
 import time
-from status import format_progress_bar
-from video import download_video, upload_video
+from status import format_progress_bar  # Assumed to be part of your project
+from video import download_video, upload_video  # Assumed to be part of your project
 
 load_dotenv('config.env', override=True)
 
@@ -132,7 +132,11 @@ async def handle_message(client, message: Message):
     except Exception as e:
         logging.error(f"Error handling message: {e}")
         unique_identifier = f"\nError ID: {int(time.time())}"  # Add unique identifier to the error message
-        await reply_msg.edit_text("ғᴀɪʟᴇᴅ ᴛᴏ ᴘʀᴏᴄᴇss ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ.\nɪғ ʏᴏᴜʀ ғɪʟᴇ sɪᴢᴇ ɪs ᴍᴏʀᴇ ᴛʜᴀɴ 120ᴍʙ ɪᴛ ᴍɪɢʜᴛ ғᴀɪʟ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ." + unique_identifier)
+        await edit_message(reply_msg, "ғᴀɪʟᴇᴅ ᴛᴏ ᴘʀᴏᴄᴇss ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ.\nɪғ ʏᴏᴜʀ ғɪʟᴇ sɪᴢᴇ ɪs ᴍᴏʀᴇ ᴛʜᴀɴ 120ᴍʙ ɪᴛ ᴍɪɢʜᴛ ғᴀɪʟ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ." + unique_identifier)
+
+async def edit_message(message, new_text):
+    if message.text != new_text:
+        await message.edit_text(new_text)
 
 if __name__ == "__main__":
     app.run()
